@@ -49,7 +49,7 @@ static int sh_help(int argc, char ** argv) {
 
 void shell_init() {
 	int size = 0;
-
+	//Copy the "" text into the print_buffer, with a length lower or equal than BUFFER_SIZE. size has the number of characters in the string created
 	size = snprintf (print_buffer, BUFFER_SIZE, "\r\n\r\n===== Monsieur Shell v0.2 =====\r\n");
 	uart_write(print_buffer, size);
 
