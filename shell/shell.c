@@ -12,6 +12,10 @@
 #include "usart.h"
 #include "gpio.h"
 
+#include "cmsis_os.h" //To include all OS FreeRTOS functions
+
+SemaphoreHandle_t sem_usart = NULL; //Semaphore for the usart
+
 typedef struct{
 	char c;
 	int (* func)(int argc, char ** argv);
@@ -26,10 +30,24 @@ static char print_buffer[BUFFER_SIZE];
 static char uart_read() {
 	char c;
 
-	HAL_UART_Receive(&UART_DEVICE, (uint8_t*)(&c), 1, HAL_MAX_DELAY);
+	//HAL_UART_Receive(&UART_DEVICE, (uint8_t*)(&c), 1, HAL_MAX_DELAY);//Code to work in regular mode and inside of a task
+
+	//To receive data from interruption
+	HAL_UART_Receive_IT(&UART_DEVICE, (uint8_t*)(&c) , 1);
+	//Block the task: take an empty semaphore
+	xSemaphoreTake(sem_usart, portMAX_DELAY);
 
 	return c;
 }
+
+//Function to unlock the task : give the semaphore
+void shell_uart_rx_callback(void)
+{
+	BaseType_t higher_priority_task_woken; //Create argument to give the semaphore
+	xSemaphoreGiveFromISR(sem_usart, &higher_priority_task_woken);
+	portYIELD_FROM_ISR(higher_priority_task_woken); //Call the scheduler
+}
+
 
 static int uart_write(char * s, uint16_t size) {
 	HAL_UART_Transmit(&UART_DEVICE, (uint8_t*)s, size, HAL_MAX_DELAY);
@@ -54,6 +72,7 @@ void shell_init() {
 	uart_write(print_buffer, size);
 
 	shell_add('h', sh_help, "Help");
+	sem_usart = xSemaphoreCreateBinary();
 }
 
 int shell_add(char c, int (* pfunc)(int argc, char ** argv), char * description) {
@@ -105,6 +124,7 @@ static char prompt[] = "> ";
 int shell_run() {
 	int reading = 0;
 	int pos = 0;
+
 
 	static char cmd_buffer[BUFFER_SIZE];
 
