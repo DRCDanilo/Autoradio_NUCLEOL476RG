@@ -48,7 +48,7 @@
 
 /* USER CODE BEGIN PV */
 TaskHandle_t h_task_shell; //handler for the shell task
-
+h_shell_t h_shell;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -94,10 +94,10 @@ int add_2_num(int argc, char ** argv)
 
 void task_shell(void * unused)
 {
-	shell_init();
-	shell_add('f', fonction, "Une fonction inutile");
-	shell_add('a', add_2_num, "Fonction pour additionner deux nom\r\n");
-	shell_run();
+	shell_init(&h_shell);
+	shell_add(&h_shell, 'f', fonction, "Une fonction inutile");
+	shell_add(&h_shell, 'a', add_2_num, "Fonction pour additionner deux nom\r\n");
+	shell_run(&h_shell);
 }
 
 //Callback of USART interruption

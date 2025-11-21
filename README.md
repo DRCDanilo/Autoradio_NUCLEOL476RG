@@ -8,4 +8,5 @@ Ce Travail Pratique a pour but d'utiliser le protocole I2S avec le codec stéré
 ## 1. Démarrage
 - On a réussi les tests avec la LED D2, l'USART2 et la fonction ```printf```.
 - On a fait fonctionner le shell que M. Fiack a fait (https://github.com/lfiack/monsieur_shell):
-- Le shell fonctionne dans une tâche en utilisant RTOS. Commit 87fd22d. 
+- Le shell fonctionne dans une tâche en utilisant RTOS. Commit 87fd22d.
+- Le shell fonctionne en mode interruption dans une tâche. Commit 8c16768.

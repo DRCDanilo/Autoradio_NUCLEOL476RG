@@ -16,11 +16,11 @@
 
 SemaphoreHandle_t sem_usart = NULL; //Semaphore for the usart
 
-typedef struct{
-	char c;
-	int (* func)(int argc, char ** argv);
-	char * description;
-} shell_func_t;
+//typedef struct{
+//	char c;
+//	int (* func)(int argc, char ** argv);
+//	char * description;
+//} shell_func_t;
 
 static int shell_func_list_size = 0;
 static shell_func_t shell_func_list[SHELL_FUNC_LIST_MAX_SIZE];
@@ -54,40 +54,40 @@ static int uart_write(char * s, uint16_t size) {
 	return size;
 }
 
-static int sh_help(int argc, char ** argv) {
+static int sh_help(h_shell_t * h_shell, int argc, char ** argv) {
 	int i;
-	for(i = 0 ; i < shell_func_list_size ; i++) {
+	for(i = 0 ; i < h_shell->func_list_size ; i++) {
 		int size;
-		size = snprintf (print_buffer, BUFFER_SIZE, "%c: %s\r\n", shell_func_list[i].c, shell_func_list[i].description);
-		uart_write(print_buffer, size);
+		size = snprintf (h_shell->print_buffer, BUFFER_SIZE, "%c: %s\r\n", h_shell->func_list[i].c, h_shell->func_list[i].description);
+		uart_write(h_shell->print_buffer, size);
 	}
 
 	return 0;
 }
 
-void shell_init() {
+void shell_init(h_shell_t * h_shell) {
 	int size = 0;
 	//Copy the "" text into the print_buffer, with a length lower or equal than BUFFER_SIZE. size has the number of characters in the string created
-	size = snprintf (print_buffer, BUFFER_SIZE, "\r\n\r\n===== Monsieur Shell v0.2 =====\r\n");
-	uart_write(print_buffer, size);
+	size = snprintf (h_shell->print_buffer, BUFFER_SIZE, "\r\n\r\n===== Monsieur Shell v0.2 =====\r\n");
+	uart_write(h_shell->print_buffer, size);
 
-	shell_add('h', sh_help, "Help");
+	shell_add(&h_shell, 'h', sh_help, "Help");
 	sem_usart = xSemaphoreCreateBinary();
 }
 
-int shell_add(char c, int (* pfunc)(int argc, char ** argv), char * description) {
-	if (shell_func_list_size < SHELL_FUNC_LIST_MAX_SIZE) {
-		shell_func_list[shell_func_list_size].c = c;
-		shell_func_list[shell_func_list_size].func = pfunc;
-		shell_func_list[shell_func_list_size].description = description;
-		shell_func_list_size++;
+int shell_add(h_shell_t * h_shell, char c, int (* pfunc)(int argc, char ** argv), char * description) {
+	if (h_shell->func_list_size < SHELL_FUNC_LIST_MAX_SIZE) {
+		h_shell->func_list[h_shell->func_list_size].c = c;
+		h_shell->func_list[h_shell->func_list_size].func = pfunc;
+		h_shell->func_list[h_shell->func_list_size].description = description;
+		h_shell->func_list_size++;
 		return 0;
 	}
 
 	return -1;
 }
 
-static int shell_exec(char * buf) {
+static int shell_exec(h_shell_t * h_shell, char * buf) {
 	int i;
 
 	char c = buf[0];
@@ -96,8 +96,8 @@ static int shell_exec(char * buf) {
 	char * argv[ARGC_MAX];
 	char *p;
 
-	for(i = 0 ; i < shell_func_list_size ; i++) {
-		if (shell_func_list[i].c == c) {
+	for(i = 0 ; i < h_shell->func_list_size ; i++) {
+		if (h_shell->func_list[i].c == c) {
 			argc = 1;
 			argv[0] = buf;
 
@@ -108,25 +108,25 @@ static int shell_exec(char * buf) {
 				}
 			}
 
-			return shell_func_list[i].func(argc, argv);
+			return h_shell->func_list[i].func(argc, argv);
 		}
 	}
 
 	int size;
-	size = snprintf (print_buffer, BUFFER_SIZE, "%c: no such command\r\n", c);
-	uart_write(print_buffer, size);
+	size = snprintf (h_shell->print_buffer, BUFFER_SIZE, "%c: no such command\r\n", c);
+	uart_write(h_shell->print_buffer, size);
 	return -1;
 }
 
 static char backspace[] = "\b \b";
 static char prompt[] = "> ";
 
-int shell_run() {
+int shell_run(h_shell_t * h_shell) {
 	int reading = 0;
 	int pos = 0;
 
 
-	static char cmd_buffer[BUFFER_SIZE];
+	//static char cmd_buffer[BUFFER_SIZE]; //Commented because is in the driver structure
 
 	while (1) {
 		uart_write(prompt, 2);
@@ -140,11 +140,11 @@ int shell_run() {
 			//process RETURN key
 			case '\r':
 				//case '\n':
-				size = snprintf (print_buffer, BUFFER_SIZE, "\r\n");
-				uart_write(print_buffer, size);
-				cmd_buffer[pos++] = 0;     //add \0 char at end of string
-				size = snprintf (print_buffer, BUFFER_SIZE, ":%s\r\n", cmd_buffer);
-				uart_write(print_buffer, size);
+				size = snprintf (h_shell->print_buffer, BUFFER_SIZE, "\r\n");
+				uart_write(h_shell->print_buffer, size);
+				h_shell->cmd_buffer[pos++] = 0;     //add \0 char at end of string
+				size = snprintf (h_shell->print_buffer, BUFFER_SIZE, ":%s\r\n", h_shell->cmd_buffer);
+				uart_write(h_shell->print_buffer, size);
 				reading = 0;        //exit read loop
 				pos = 0;            //reset buffer
 				break;
@@ -161,11 +161,11 @@ int shell_run() {
 				//only store characters if buffer has space
 				if (pos < BUFFER_SIZE) {
 					uart_write(&c, 1);
-					cmd_buffer[pos++] = c; //store
+					h_shell->cmd_buffer[pos++] = c; //store
 				}
 			}
 		}
-		shell_exec(cmd_buffer);
+		shell_exec(h_shell, h_shell->cmd_buffer);
 	}
 	return 0;
 }
