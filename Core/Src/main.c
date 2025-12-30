@@ -27,6 +27,7 @@
 #include "shell.h" //Include the shell file
 #include <stdio.h> //Include to work with printf function
 #include <stdlib.h> //Include to use atoi function
+#include "drv_uart.h" //Include UART dirver
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -66,26 +67,33 @@ int __io_putchar(int chr) //Function to use the printf function to send with UAR
 	return chr;
 }
 
-int fonction(int argc, char ** argv) //Function of the shell
+int fonction(h_shell_t * h_shell, int argc, char ** argv) //Function of the shell
 {
-	printf("Je suis une fonction bidon\r\n");
 
-	printf("argc : %d\r\n", argc);
+	int size = snprintf (h_shell->print_buffer, BUFFER_SIZE, "Je suis une fonction bidon\r\n");
+	h_shell->drv.transmit(h_shell->print_buffer, size);
+
+	size = snprintf (h_shell->print_buffer, BUFFER_SIZE, "argc : %d\r\n", argc);
+	h_shell->drv.transmit(h_shell->print_buffer, size);
+
 
 	for(int i = 0; i < argc; i++)
 	{
-		printf("argc[%d] : %s \r\n", i, argv[i]);
+		size = snprintf (h_shell->print_buffer, BUFFER_SIZE, "argc[%d] : %s \r\n", i, argv[i]);
+		h_shell->drv.transmit(h_shell->print_buffer, size);
 	}
 
 	return 0;
 }
 
-int add_2_num(int argc, char ** argv)
+int add_2_num(h_shell_t * h_shell, int argc, char ** argv)
 {
 	if(argc == 3)
 	{
 		int sum = atoi(argv[1]) + atoi(argv[2]);
-		printf("La somme est : %d \r\n", sum);
+		//printf("La somme est : %d \r\n", sum);
+		int size = snprintf (h_shell->print_buffer, BUFFER_SIZE, "La somme est : %d \r\n", sum);
+		h_shell->drv.transmit(h_shell->print_buffer, size);
 	}
 
 
@@ -145,6 +153,9 @@ int main(void)
 	MX_GPIO_Init();
 	MX_USART2_UART_Init();
 	/* USER CODE BEGIN 2 */
+	h_shell.drv.receive = drv_uart_receive;
+	h_shell.drv.transmit = drv_uart_transmit;
+
 	printf("\r\n===== TEST SHELL =====\r\n");
 
 	if( xTaskCreate(task_shell, "Task Shell", STACK_DEPTH, NULL, 1, &h_task_shell) != pdPASS)

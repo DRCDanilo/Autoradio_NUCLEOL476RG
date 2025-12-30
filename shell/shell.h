@@ -16,27 +16,44 @@
 #define BUFFER_SIZE 40
 #define SHELL_FUNC_LIST_MAX_SIZE 64
 
-//Struc for the functions
-typedef struct{
+struct h_shell_struct;
+
+
+typedef int (*shell_func_pointer_t)(struct h_shell_struct * h_shell, int argc, char ** argv);
+typedef uint8_t (* drv_shell_transmit_t)(const char * pData, uint16_t size);
+typedef uint8_t (* drv_shell_receive_t)(char * pData, uint16_t size);
+
+
+typedef struct shell_func_struct
+{
 	char c;
-	int (* func)(int argc, char ** argv);
+	//int (* func)(int argc, char ** argv);
+	shell_func_pointer_t func;
 	char * description;
 } shell_func_t;
 
-//Structure for driver
+
+typedef struct drv_shell_struct
+{
+    drv_shell_transmit_t transmit;
+    drv_shell_receive_t receive;
+} drv_shell_t;
+
+
 typedef struct h_shell_structure
 {
 	int func_list_size;
 	shell_func_t func_list[SHELL_FUNC_LIST_MAX_SIZE];
 	char print_buffer[BUFFER_SIZE];
 	char cmd_buffer[BUFFER_SIZE];
+	drv_shell_t drv;
 
 }h_shell_t;
 
 void shell_init(h_shell_t * h_shell);
-int shell_add(h_shell_t * h_shell, char c, int (* pfunc)(int argc, char ** argv), char * description);
+int shell_add(h_shell_t * h_shell, char c, shell_func_pointer_t pfunc, char * description);
 int shell_run(h_shell_t * h_shell);
-
+void shell_uart_rx_callback(void);
 
 
 #endif /* INC_LIB_SHELL_SHELL_H_ */
