@@ -16,4 +16,24 @@ Ce Travail Pratique a pour but d'utiliser le protocole I2S avec le codec stéré
 
 ### 2.1 Configuration 
 
-1. La référence du GPIO Expander est 
+1. La référence du GPIO Expander est MCP23S17.
+
+2. Sur le STM32 de la carte NUCLE-L476RG le SPI ustilisé est le SPI3 :
+    - SPI3_SCK -> PC10.
+    - SPI3_MISO -> PC11.
+    - SPI3_MOSI -> PB5.
+    - nCS -> PB7 (GPIO pour controler à la main).
+
+3. Les paramètres à configurer dans STM32CubeIDE sont: 
+
+    - Activer le SPI3.
+    - Configurer les pins :
+        - SPI3_SCK -> PC10.
+        - SPI3_MISO -> PC11.
+        - SPI3_MOSI -> PB5.
+        - nCS -> PB7 (GPIO pour controler à la main).
+
+### 2.2 Tests
+
+1. Faire clignoter une ou plusieurs LEDs.
+
