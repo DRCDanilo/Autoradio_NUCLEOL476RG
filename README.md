@@ -10,3 +10,10 @@ Ce Travail Pratique a pour but d'utiliser le protocole I2S avec le codec stéré
 - On a fait fonctionner le shell que M. Fiack a fait (https://github.com/lfiack/monsieur_shell):
 - Le shell fonctionne dans une tâche en utilisant RTOS. Commit 87fd22d.
 - Le shell fonctionne en mode interruption dans une tâche. Commit 8c16768.
+- Le sheel fonctionne dans une tâche de FreeRTOS en mode interruption et avec un dirver sous forme de structure. Commit 48ba3e5.
+
+## 2. Le GPIO Expander et le VU-Metre
+
+### 2.1 Configuration 
+
+1. La référence du GPIO Expander est 
