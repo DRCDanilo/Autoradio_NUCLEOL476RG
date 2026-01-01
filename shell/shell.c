@@ -42,7 +42,6 @@ void shell_uart_rx_callback(void)
 
 
 
-
 static int sh_help(h_shell_t * h_shell, int argc, char ** argv) {
 	int i;
 	for(i = 0 ; i < h_shell->func_list_size ; i++) {
@@ -163,3 +162,4 @@ int shell_run(h_shell_t * h_shell) {
 	}
 	return 0;
 }
+

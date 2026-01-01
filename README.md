@@ -32,6 +32,10 @@ Ce Travail Pratique a pour but d'utiliser le protocole I2S avec le codec stéré
         - SPI3_MISO -> PC11.
         - SPI3_MOSI -> PB5.
         - nCS -> PB7 (GPIO pour controler à la main).
+    - Configurer les paramètres :
+        - Frame Format : Motorola.
+        - Data Size : 8 bits.
+        - First Bit : MSB first.
 
 ### 2.2 Tests
 

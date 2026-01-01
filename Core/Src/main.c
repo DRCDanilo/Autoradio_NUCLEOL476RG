@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "spi.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -38,6 +39,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define STACK_DEPTH 256
+
+#define GPIO_EXPANDER_ADDRESS 0b01000000 //Address and LSB is '0' for SPI write operation
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -50,6 +53,7 @@
 /* USER CODE BEGIN PV */
 TaskHandle_t h_task_shell; //handler for the shell task
 h_shell_t h_shell;
+shell_func_pointer_t pfunc;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -100,11 +104,55 @@ int add_2_num(h_shell_t * h_shell, int argc, char ** argv)
 	return 0;
 }
 
+void mcp23s17_init()
+{
+	write_spi(0x05, 0b10110000);
+
+	write_spi(0x00, 0x00);
+	write_spi(0x10, 0x00);
+
+
+	write_spi(0x0A, 0xFF);
+	write_spi(0x1A, 0xFF);
+}
+
+void write_spi(uint8_t reg, uint8_t value)
+{
+
+	uint8_t tx_data[3] = { GPIO_EXPANDER_ADDRESS, reg, value };
+	HAL_GPIO_WritePin(VU_nCS_GPIO_Port, VU_nCS_Pin, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&hspi3, tx_data, 3, HAL_MAX_DELAY);
+	HAL_GPIO_WritePin(VU_nCS_GPIO_Port, VU_nCS_Pin, GPIO_PIN_SET);
+	HAL_Delay(100);
+}
+
+int led(h_shell_t * h_shell, int argc, char ** argv)
+{
+	int size = snprintf (h_shell->print_buffer, BUFFER_SIZE, "FUNCION LED\r\n");
+	h_shell->drv.transmit(h_shell->print_buffer, size);
+
+
+	while(1)
+	{
+		write_spi(0x0A, 0x7E);
+		HAL_Delay(1000);
+		write_spi(0x0A, 0xFF);
+		HAL_Delay(1000);
+	}
+
+	return 0;
+}
+
+
+
+
+
 void task_shell(void * unused)
 {
 	shell_init(&h_shell);
 	shell_add(&h_shell, 'f', fonction, "Une fonction inutile");
 	shell_add(&h_shell, 'a', add_2_num, "Fonction pour additionner deux nom\r\n");
+	shell_add(&h_shell, 'l', led, "Function pour allumer une LED");
 	shell_run(&h_shell);
 }
 
@@ -152,9 +200,11 @@ int main(void)
 	/* Initialize all configured peripherals */
 	MX_GPIO_Init();
 	MX_USART2_UART_Init();
+	MX_SPI3_Init();
 	/* USER CODE BEGIN 2 */
 	h_shell.drv.receive = drv_uart_receive;
 	h_shell.drv.transmit = drv_uart_transmit;
+	mcp23s17_init();
 
 	printf("\r\n===== TEST SHELL =====\r\n");
 
