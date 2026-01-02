@@ -41,3 +41,9 @@ Ce Travail Pratique a pour but d'utiliser le protocole I2S avec le codec stéré
 
 1. Faire clignoter une ou plusieurs LEDs.
 
+   On a fait clignoter deux leds. Commit f08320f.
+
+   https://github.com/user-attachments/assets/8a6fa138-5392-4ab6-a35d-b5600cbe782d
+
+
+
