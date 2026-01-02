@@ -45,5 +45,15 @@ Ce Travail Pratique a pour but d'utiliser le protocole I2S avec le codec stéré
 
    https://github.com/user-attachments/assets/8a6fa138-5392-4ab6-a35d-b5600cbe782d
 
+2. Pour toutes les tester, vous pouvez faire un chenillard (par exemple).
+
+   On a fait un chenillard. Commit ee84ced.
+   
+   https://github.com/user-attachments/assets/778ab33e-1173-4436-8075-25a2957c606f
+
+### 2.3 Driver
+
+1. Écrivez un driver pour piloter les LED. Utilisez une structure.
+
 
 
