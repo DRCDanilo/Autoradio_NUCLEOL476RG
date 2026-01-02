@@ -104,9 +104,21 @@ int add_2_num(h_shell_t * h_shell, int argc, char ** argv)
 	return 0;
 }
 
+
+void write_spi(uint8_t reg, uint8_t value)
+{
+
+	uint8_t tx_data[3] = { GPIO_EXPANDER_ADDRESS, reg, value };
+	HAL_GPIO_WritePin(VU_nCS_GPIO_Port, VU_nCS_Pin, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&hspi3, tx_data, 3, HAL_MAX_DELAY);
+	HAL_GPIO_WritePin(VU_nCS_GPIO_Port, VU_nCS_Pin, GPIO_PIN_SET);
+	//HAL_Delay(100);
+}
+
 void mcp23s17_init()
 {
-	write_spi(0x05, 0b10110000);
+	//write_spi(0x05, 0b10110000);
+	write_spi(0x05, 0xB0);
 
 	write_spi(0x00, 0x00);
 	write_spi(0x10, 0x00);
@@ -116,29 +128,61 @@ void mcp23s17_init()
 	write_spi(0x1A, 0xFF);
 }
 
-void write_spi(uint8_t reg, uint8_t value)
-{
 
-	uint8_t tx_data[3] = { GPIO_EXPANDER_ADDRESS, reg, value };
-	HAL_GPIO_WritePin(VU_nCS_GPIO_Port, VU_nCS_Pin, GPIO_PIN_RESET);
-	HAL_SPI_Transmit(&hspi3, tx_data, 3, HAL_MAX_DELAY);
-	HAL_GPIO_WritePin(VU_nCS_GPIO_Port, VU_nCS_Pin, GPIO_PIN_SET);
-	HAL_Delay(100);
-}
 
 int led(h_shell_t * h_shell, int argc, char ** argv)
 {
 	int size = snprintf (h_shell->print_buffer, BUFFER_SIZE, "FUNCION LED\r\n");
 	h_shell->drv.transmit(h_shell->print_buffer, size);
 
+while(1){
+	write_spi(0x0A, 0xFE);
+	HAL_Delay(200);
+	write_spi(0x0A, 0xFD);
+	HAL_Delay(200);
+	write_spi(0x0A, 0xFB);
+	HAL_Delay(200);
+	write_spi(0x0A, 0xF7);
+	HAL_Delay(200);
 
-	while(1)
+	write_spi(0x0A, 0xEF);
+	HAL_Delay(200);
+	write_spi(0x0A, 0xDF);
+	HAL_Delay(200);
+	write_spi(0x0A, 0xBF);
+	HAL_Delay(200);
+	write_spi(0x0A, 0x7F);
+	HAL_Delay(200);
+
+	write_spi(0x0A, 0xFF);
+
+	write_spi(0x1A, 0xFE);
+	HAL_Delay(200);
+	write_spi(0x1A, 0xFD);
+	HAL_Delay(200);
+	write_spi(0x1A, 0xFB);
+	HAL_Delay(200);
+	write_spi(0x1A, 0xF7);
+	HAL_Delay(200);
+
+	write_spi(0x1A, 0xEF);
+	HAL_Delay(200);
+	write_spi(0x1A, 0xDF);
+	HAL_Delay(200);
+	write_spi(0x1A, 0xBF);
+	HAL_Delay(200);
+	write_spi(0x1A, 0x7F);
+	HAL_Delay(200);
+
+	write_spi(0x1A, 0xFF);
+}
+	/*for(uint8_t i = 0xFF; i > 0x00; i-=2)
 	{
-		write_spi(0x0A, 0x7E);
-		HAL_Delay(1000);
-		write_spi(0x0A, 0xFF);
-		HAL_Delay(1000);
-	}
+		write_spi(0x1A, i);
+		HAL_Delay(100);
+	}*/
+
+
 
 	return 0;
 }
